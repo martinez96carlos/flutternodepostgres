@@ -4,48 +4,49 @@ const router = Router();
 const pool = require('../database/database');
 
 router.get('/', (req,res) => {
-    res.status(200).json('Server en el puerto 3000 y base de datos conectada')
+    res.status(200).json('Server en el puerto 3000 y base de datos conectada');
 });
 
-router.get('/:users', (req,res) => {
-    pool.query('SELECT * from USERS;',(error, rows, fields) => {
+router.get('/users', async (req,res) => {
+    const response = await pool.query('select * from users;',(error, response, fields) => {
         if (!error){
-            res.json(rows);
+           res.json(response.rows);
         } else {
             console.log(error);
         }
     });
 });
 
-router.get('/:users/:id', (req,res)=>{
-    const {id} = req.params;
-    pool.query('SELECT * from USERS where USER_ID = ?;', [id], (error, rows, fields) => {
+router.get('/users/:id', async (req,res)=>{
+    const id = req.params.id;
+    const response = await pool.query('select * from users where user_id = $1', [id], (error, response, fields) => {
         if(!error){
-            res.json(rows);
+            res.json(response.rows);
         } else {
             console.log(error);
         }
     });
 });
 
-router.post('/:users', (req,res) => {
-    const { USER_NICKNAME, USER_NAME, USER_LASTNAME, USER_EMAIL, RANDOMSTR, HASH} = req.body;
+router.post('/users', async (req,res) => {
+    const {user_nickname, user_name, user_lastname, user_email, randomstr, hash} = req.body;
     console.log(req.body);
-    pool.query('INSERT INTO USERS(USER_ID, USER_NICKNAME, USER_NAME, USER_LASTNAME, USER_EMAIL, RANDOMSTR, HASH) VALUES (?,?,?,?,?,?);',
-        [USER_NICKNAME, USER_NAME, USER_LASTNAME, USER_EMAIL, RANDOMSTR, HASH], (error, rows, fields) =>{
+    const response = await pool.query('INSERT INTO users (user_nickname, user_name, user_lastname, user_email, randomstr, hash) values ($1, $2, $3, $4, $5, $6)',
+    [user_nickname, user_name, user_lastname, user_email, randomstr, hash], (error, response, fields) => {
         if(!error){
-            res.json({status: 'Usuario guardado'});
+            res.json({status: 'Usuario creado'});
         } else {
             console.log(error);
         }
     });
 });
 
-router.put('/:users/:id', (req,res)=>{
-    const { USER_NICKNAME, USER_NAME, USER_LASTNAME, USER_EMAIL, RANDOMSTR, HASH, id} = req.body;
+router.put('/users/:id', async (req,res)=>{
+    const id = req.params.id;
+    const { user_nickname, user_name, user_lastname, user_email, randomstr, hash} = req.body;
     console.log(req.body);
-    pool.query('UPDATE users SET USER_NICKNAME = ?, USER_NAME = ?, USER_LASTNAME = ?, USER_EMAIL = ?, RANDOMSTR = ?, HASH = ?, WHERE USER_ID = ?;',
-        [USER_NICKNAME, USER_NAME, USER_LASTNAME, USER_EMAIL, RANDOMSTR, HASH, id], (error, rows, fields) =>{
+    const response = await pool.query('update users set user_nickname = $1, user_name = $2, user_lastname = $3, user_email = $4, randomstr = $5, hash = $6 WHERE user_id = $7',
+        [user_nickname, user_name, user_lastname, user_email, randomstr, hash, id], (error, response, fields) =>{
         if(!error){
             res.json({status: 'Cambios guardados'});
         } else {
@@ -54,9 +55,9 @@ router.put('/:users/:id', (req,res)=>{
     });
 });
 
-router.delete('/:users/:id', (req,res) => {
-    const {id} = req.params;
-    pool.query('DELETE from USERS where USER_ID = ?', [id], (error, rows, fields) =>{
+router.delete('/users/:id', async (req,res) => {
+    const id = req.params.id;
+    const response = await pool.query('delete from users where user_id = $1', [id], (error, response, fields) =>{
         if(!error){
             res.json({status: 'Usuario eliminado'});
         } else {
